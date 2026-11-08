@@ -85,5 +85,66 @@ def clean_location(location: str) -> str:
     return loc or (m.group(1) if m else "")
 
 
-def wanted(title: str, location: str) -> bool:
-    return is_internship(title) and is_engineering(title) and is_us(location)
+def wanted(title: str, location: str, terms=()) -> bool:
+    return is_internship(title) and is_engineering(title) and is_us(location) and is_summer(title, terms)
+
+
+# ---------------------------------------------------------------- season
+SEASON_RE = re.compile(r"\b(summer|spring|fall|autumn|winter)\b", re.I)
+
+
+def is_summer(title: str, terms=(), today=None) -> bool:
+    """Keep summer internships and ones that don't name a season.
+
+    Drop a posting only when it names seasons and none of them is summer
+    ("Spring 2027", "Fall 2026"), or when it's for a summer that has already passed.
+    """
+    import datetime as _dt
+    today = today or _dt.date.today()
+    text = " ".join([title or ""] + list(terms or []))
+    seasons = {m.lower() for m in SEASON_RE.findall(text)}
+    if seasons and "summer" not in seasons:
+        return False
+    if "summer" in seasons:
+        years = [int(y) for y in re.findall(r"20\d\d", text)]
+        if years and max(years) < today.year or (years and max(years) == today.year and today.month > 8):
+            return False
+    return True
+
+
+# ---------------------------------------------------------------- location
+CA_RE = re.compile(
+    r"\bCA\b|california|los angeles|\bLA\b|san francisco|\bSF\b|south sf|bay area|long beach|hawthorne|"
+    r"el segundo|torrance|irvine|costa mesa|newport beach|huntington beach|santa ana|san diego|carlsbad|"
+    r"san jose|mountain view|sunnyvale|palo alto|santa clara|fremont|pasadena|redondo|playa vista|"
+    r"culver city|mojave|vandenberg|simi valley|moorpark|petaluma|san luis obispo|marina|santa cruz|"
+    r"goleta|seal beach|victorville|lancaster|palmdale",
+    re.I,
+)
+
+
+def split_locations(location: str) -> list:
+    loc = clean_location(location)
+    parts = [p.strip() for p in re.split(r";|\||\n| / ", loc) if p.strip()]
+    return parts or ([loc] if loc else [])
+
+
+def pick_location(location: str) -> str:
+    """One location to show: a California one if offered there, otherwise the first one."""
+    parts = split_locations(location)
+    if not parts:
+        return ""
+    for p in parts:
+        if CA_RE.search(p):
+            return p
+    return parts[0]
+
+
+def is_california(location: str) -> bool:
+    return any(CA_RE.search(p) for p in split_locations(location))
+
+
+def same_role_key(company: str, title: str) -> str:
+    """Postings with this same key are the same role offered in different places."""
+    t = re.sub(r"[^a-z0-9]+", " ", (title or "").lower()).strip()
+    return f"grp:{company.lower()}|{t}"

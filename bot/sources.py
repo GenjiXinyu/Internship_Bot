@@ -132,15 +132,16 @@ def _workday_posted(text: str) -> Optional[str]:
     return None
 
 
-def _workday_country(base: str, tenant: str, site: str, path: str) -> str:
-    """Workday lists only a city ("Gorgonzola"), so ask the posting itself for its country."""
+def _workday_details(base: str, tenant: str, site: str, path: str):
+    """Workday's list shows "3 Locations" or just a city ("Gorgonzola").
+    The posting itself has every location and the country."""
     try:
         r = session.get(f"{base}/wday/cxs/{tenant}/{site}{path}", timeout=TIMEOUT)
         info = r.json().get("jobPostingInfo", {}) if r.status_code == 200 else {}
-        country = (info.get("country") or {}).get("descriptor", "")
-        return country
     except Exception:
-        return ""
+        return [], ""
+    locs = [info.get("location")] + list(info.get("additionalLocations") or [])
+    return [l for l in locs if l], (info.get("country") or {}).get("descriptor", "")
 
 
 def workday(company: str, tenant: str, wd: str, site: str) -> List[Job]:
@@ -182,7 +183,9 @@ def workday(company: str, tenant: str, wd: str, site: str) -> List[Job]:
     for j in jobs:
         if is_internship(j.title) and is_engineering(j.title):
             path = j.url.split(f"/{site}", 1)[-1]
-            country = _workday_country(base, tenant, site, path)
+            locs, country = _workday_details(base, tenant, site, path)
+            if locs:
+                j.location = "; ".join(locs)
             if country:
                 j.location = f"{j.location} [country: {country}]".strip()
     return jobs
@@ -336,5 +339,6 @@ def simplify_jobs(listings: list, company: str, names: List[str]) -> List[Job]:
             location="; ".join(x.get("locations") or []),
             posted=_iso_to_date(x.get("date_posted")),
             source="simplify",
+            terms=[t for t in (x.get("terms") or []) if t and t != "N/A"],
         ))
     return jobs

@@ -19,6 +19,7 @@ class Job:
     posted: Optional[str] = None  # YYYY-MM-DD, or None when the source doesn't say
     source: str = ""
     key: str = field(default="")
+    terms: list = field(default_factory=list)  # e.g. ["Summer 2027"], when the source says
 
     def __post_init__(self) -> None:
         if not self.key:

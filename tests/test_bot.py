@@ -264,3 +264,62 @@ def test_tracker_grows_tab_when_full():
     t.ws.row_count = 2
     t.add_jobs([Job("Vast", "Intern", "https://job-boards.greenhouse.io/vast/jobs/2222222")], "2026-11-08", "Not yet Applied")
     assert t.ws.updates[0] == ("add_rows", 201)
+
+
+# ------------------------------------------------------------------ summer + locations
+import datetime as _dt
+from bot.filters import is_summer, pick_location
+from bot.main import group_roles
+
+NOV_2026 = _dt.date(2026, 11, 8)
+
+
+@pytest.mark.parametrize("title,terms,expected", [
+    ("Propulsion Design Intern Summer 2027", [], True),
+    ("Mechanical Engineering Internship (Spring or Summer 2027)", [], True),
+    ("Propulsion Engineering Intern", [], True),                      # no season -> keep
+    ("Electrical Systems Engineer Co-op - Fixed Term", [], True),
+    ("Spring 2027 Engineering Internship/Co-op", [], False),
+    ("Internship - Electrical Engineering - Fall 2026", [], False),
+    ("FPGA Intern - Winter 2027", [], False),
+    ("Flight Software Engineering Intern - (Summer/Fall 2026)", [], False),  # summer already over
+    ("Software Engineer Intern", ["Fall 2026"], False),               # season only in SimplifyJobs terms
+    ("Software Engineer Intern", ["Summer 2027"], True),
+])
+def test_summer_only(title, terms, expected):
+    assert is_summer(title, terms, today=NOV_2026) == expected
+
+
+@pytest.mark.parametrize("loc,expected", [
+    ("Seattle, WA; LA; Denver, CO", "LA"),
+    ("Greater Seattle Area; Los Angeles, CA; Space Coast, FL [country: United States of America]", "Los Angeles, CA"),
+    ("Boston, MA; Seattle, WA; Reston, VA", "Boston, MA"),
+    ("Kent, WA", "Kent, WA"),
+    ("Flexible - Any SpaceX Site", "Flexible - Any SpaceX Site"),
+])
+def test_pick_location(loc, expected):
+    assert pick_location(loc) == expected
+
+
+def test_same_role_in_several_places_becomes_one_row():
+    jobs = [
+        Job("Rocket Lab", "Manufacturing Engineering Intern Summer 2027", "https://job-boards.greenhouse.io/rocketlab/jobs/7996623003",
+            location="Wallops Island, VA", posted="2026-09-17"),
+        Job("Rocket Lab", "Manufacturing Engineering Intern Summer 2027", "https://job-boards.greenhouse.io/rocketlab/jobs/7984564003",
+            location="Long Beach, CA", posted="2026-09-16"),
+        Job("Rocket Lab", "Fluid Systems Intern Summer 2027", "https://job-boards.greenhouse.io/rocketlab/jobs/7986794003",
+            location="Long Beach, CA"),
+    ]
+    roles = group_roles(jobs)
+    assert len(roles) == 2
+    mfg = next(r for r in roles if "Manufacturing" in r.job.title)
+    assert mfg.job.location == "Long Beach, CA" and mfg.job.posted == "2026-09-16" and len(mfg.keys) == 2
+
+
+def test_role_counts_as_known_if_any_location_was_logged():
+    rows = [HEADER, ["Rocket Lab", "x", "Wallops", "Waiting Response", "https://job-boards.greenhouse.io/rocketlab/jobs/7996623003"]]
+    t = make_tracker(rows, [["Key"]])
+    jobs = [Job("Rocket Lab", "Mfg Intern Summer 2027", "https://job-boards.greenhouse.io/rocketlab/jobs/7996623003", location="Wallops Island, VA"),
+            Job("Rocket Lab", "Mfg Intern Summer 2027", "https://job-boards.greenhouse.io/rocketlab/jobs/7984564003", location="Long Beach, CA")]
+    r = group_roles(jobs)[0]
+    assert t.known_role(r.keys, r.group_key)

@@ -19,7 +19,7 @@ from typing import Dict, List, Tuple
 import yaml
 
 from . import sources
-from .filters import wanted
+from .filters import pick_location, same_role_key, wanted, is_california
 from .models import Job
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -60,7 +60,7 @@ def fetch_all(companies: List[dict], simplify_url: str) -> Tuple[List[Job], List
                 problems.append(f"{name} ({label}): {err}")
         else:
             direct_ok[name] = True
-            kept = sum(1 for j in got if wanted(j.title, j.location))
+            kept = sum(1 for j in got if wanted(j.title, j.location, j.terms))
             report.append(f"  [ok]   {name:24s} {label}: {len(got)} jobs, {kept} engineering internships")
         jobs.extend(got)
 
@@ -74,7 +74,7 @@ def fetch_all(companies: List[dict], simplify_url: str) -> Tuple[List[Job], List
     for c in companies:
         got = sources.simplify_jobs(listings, c["name"], c.get("simplify") or [c["name"]])
         if got:
-            kept = sum(1 for j in got if wanted(j.title, j.location))
+            kept = sum(1 for j in got if wanted(j.title, j.location, j.terms))
             report.append(f"         {c['name']:24s} simplify: {len(got)} active, {kept} engineering internships")
         jobs.extend(got)
 
@@ -104,6 +104,31 @@ def dedupe(jobs: List[Job]) -> List[Job]:
     return list(best.values())
 
 
+class Role:
+    """One role, possibly posted separately for several locations."""
+
+    def __init__(self, members: List[Job]):
+        self.members = members
+        self.group_key = same_role_key(members[0].company, members[0].title)
+        # Show the California posting if there is one, otherwise the first one
+        ca = [j for j in members if is_california(j.location)]
+        self.job = (ca or members)[0]
+        dates = [j.posted for j in members if j.posted]
+        self.job.posted = min(dates) if dates else None
+        self.job.location = pick_location(self.job.location)
+
+    @property
+    def keys(self) -> List[str]:
+        return [j.key for j in self.members]
+
+
+def group_roles(jobs: List[Job]) -> List[Role]:
+    groups: Dict[str, List[Job]] = {}
+    for j in sorted(jobs, key=lambda j: (j.source == "simplify", j.url)):
+        groups.setdefault(same_role_key(j.company, j.title), []).append(j)
+    return [Role(m) for m in groups.values()]
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true",
@@ -118,23 +143,27 @@ def main(argv=None) -> int:
     found_date = sources.today().isoformat()
 
     all_jobs, report, problems = fetch_all(companies, cfg["simplify_url"])
-    jobs = dedupe([j for j in all_jobs if wanted(j.title, j.location)])
+    jobs = dedupe([j for j in all_jobs if wanted(j.title, j.location, j.terms)])
+    roles = group_roles(jobs)
     print("Sources:")
     print("\n".join(report))
-    print(f"\n{len(jobs)} US engineering internships open across {len(companies)} companies.")
+    print(f"\n{len(jobs)} US summer engineering internship postings open across {len(companies)} companies, "
+          f"{len(roles)} after merging the same role offered in several locations.")
 
     if args.dry_run and args.show:
         needle = args.show.lower()
         print(f"\nEvery posting fetched for companies matching '{args.show}':")
         for j in sorted(all_jobs, key=lambda j: (j.company, j.source, j.title)):
             if needle in j.company.lower():
-                print(f"  [{'keep' if wanted(j.title, j.location) else 'drop'}] {j.company} | {j.source} | "
+                print(f"  [{'keep' if wanted(j.title, j.location, j.terms) else 'drop'}] {j.company} | {j.source} | "
                       f"{j.title} | {j.location} | {j.url}")
         print()
 
     if args.dry_run:
-        for j in sorted(jobs, key=lambda j: (j.company, j.title)):
-            print(f"  {j.company}: {j.title} | {j.location} | posted {j.posted or '?'} | {j.url}")
+        for r in sorted(roles, key=lambda r: (r.job.company, r.job.title)):
+            j = r.job
+            extra = f" (+{len(r.members) - 1} other locations)" if len(r.members) > 1 else ""
+            print(f"  {j.company}: {j.title} | {j.location}{extra} | posted {j.posted or '?'} | {j.url}")
         return 0
 
     from .emailer import build_message, send
@@ -153,13 +182,13 @@ def main(argv=None) -> int:
     )
     catch_up = tracker.first_run
     filled = tracker.fill_posted_dates(jobs)
-    new = [j for j in jobs if not tracker.known(j)]
-    # Postings you already logged count as seen, so they're never emailed
-    already_logged = [j for j in jobs if j.key in tracker.row_by_key]
+    # A role is new only if none of its postings (any location) has been seen or logged by you
+    new_roles = [r for r in roles if not tracker.known_role(r.keys, r.group_key)]
+    new = [r.job for r in new_roles]
 
     tracker.add_jobs(new, found_date, cfg["sheet"].get("new_status", "Not yet Applied"))
-    tracker.mark_seen(new + already_logged, found_date)
-    print(f"Added {len(new)} new postings to the sheet; filled {filled} Date Posted cells.")
+    tracker.mark_seen_role_keys(roles, found_date)
+    print(f"Added {len(new)} new roles to the sheet; filled {filled} Date Posted cells.")
 
     if new:
         sender = os.environ.get("GMAIL_ADDRESS") or email_to

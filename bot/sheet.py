@@ -67,6 +67,9 @@ class Tracker:
     def known(self, job: Job) -> bool:
         return job.key in self.seen or job.key in self.row_by_key
 
+    def known_role(self, keys: List[str], group_key: str) -> bool:
+        return group_key in self.seen or any(k in self.seen or k in self.row_by_key for k in keys)
+
     # -- writes
     def fill_posted_dates(self, jobs: List[Job]) -> int:
         """For rows you already logged, fill in an empty Date Posted."""
@@ -108,6 +111,18 @@ class Tracker:
             self.ws.add_rows(last - capacity + 200)
         self.ws.update(range_name=f"A{start}", values=out, value_input_option="USER_ENTERED")
         self.rows.extend(out)
+
+    def mark_seen_role_keys(self, roles, found_date: str) -> None:
+        """Remember every posting of every role, plus the role itself, so a role reposted
+        for another location later doesn't come back as new."""
+        rows = []
+        for r in roles:
+            for k in [r.group_key] + r.keys:
+                if k and k not in self.seen:
+                    rows.append([k, r.job.company, r.job.title, r.job.url, found_date])
+                    self.seen.add(k)
+        if rows:
+            self.seen_ws.append_rows(rows, value_input_option="RAW")
 
     def mark_seen(self, jobs: List[Job], found_date: str) -> None:
         new = [j for j in jobs if j.key and j.key not in self.seen]
