@@ -36,7 +36,7 @@ companies:
       - {page: "https://fireflyspace.com/careers/", optional: true}
     simplify: [Firefly Aerospace]
   - name: Relativity Space
-    sources: [{greenhouse: relativity}, {greenhouse: rsinternboard}]
+    sources: [{greenhouse: relativity}, {greenhouse: rsinternboard, optional: true}]
     simplify: [Relativity Space]
   - name: Stoke Space
     sources:
@@ -169,7 +169,11 @@ companies:
     sources: [{greenhouse: archer56}]
     simplify: [Archer Aviation, Archer]
   - name: Wisk
-    sources: [{lever: wisk}]
+    sources:
+      - {lever: wisk, optional: true}
+      - {greenhouse: wisk, optional: true}
+      - {greenhouse: wiskaero, optional: true}
+      - {ashby: wisk, optional: true}
     simplify: [Wisk, Wisk Aero]
   - name: Whisper Aero
     sources: [{greenhouse: whisperaero}]

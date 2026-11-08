@@ -24,7 +24,7 @@ EXCLUDE_RE = re.compile(
     r"communications|public relations|business|procurement|purchasing|people|policy|government|"
     r"hospitality|graphic|brand|social media|supply chain|buyer|contracts|administrative|"
     r"office|facilities|ehs|safety specialist|it support|help ?desk|paralegal|tax|audit|"
-    r"economist|economics|strategy|product manag|program manag|project manag",
+    r"economist|economics|strategy|product manag|program manag|project manag|security",
     re.I,
 )
 
@@ -35,7 +35,8 @@ NON_US_RE = re.compile(
     r"spain|madrid|getafe|italy|netherlands|belgium|kruibeke|switzerland|sweden|norway|denmark|"
     r"finland|poland|czech|romania|portugal|austria|india|bangalore|bengaluru|hyderabad|"
     r"china|japan|korea|singapore|australia|new zealand|auckland|brazil|mexico|morocco|tunisia|"
-    r"philippines|israel|united arab emirates|\buae\b|saudi|qatar|turkey",
+    r"philippines|israel|united arab emirates|\buae\b|saudi|qatar|turkey|czechia|"
+    r"\[country: (?!united states)[^\]]*\]",  # added by the Workday fetcher: "Gorgonzola [country: Italy]"
     re.I,
 )
 US_STATES = (
@@ -75,6 +76,13 @@ def is_us(location: str) -> bool:
     if not NON_US_RE.search(loc):
         return True
     return bool(US_CODE_RE.search(loc) or US_WORD_RE.search(loc))
+
+
+def clean_location(location: str) -> str:
+    """Drop the "[country: ...]" tag the Workday fetcher adds, keeping the readable part."""
+    loc = re.sub(r"\s*\[country: [^\]]*\]", "", location or "").strip()
+    m = re.search(r"\[country: ([^\]]*)\]", location or "")
+    return loc or (m.group(1) if m else "")
 
 
 def wanted(title: str, location: str) -> bool:

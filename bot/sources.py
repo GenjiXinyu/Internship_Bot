@@ -132,7 +132,20 @@ def _workday_posted(text: str) -> Optional[str]:
     return None
 
 
+def _workday_country(base: str, tenant: str, site: str, path: str) -> str:
+    """Workday lists only a city ("Gorgonzola"), so ask the posting itself for its country."""
+    try:
+        r = session.get(f"{base}/wday/cxs/{tenant}/{site}{path}", timeout=TIMEOUT)
+        info = r.json().get("jobPostingInfo", {}) if r.status_code == 200 else {}
+        country = (info.get("country") or {}).get("descriptor", "")
+        return country
+    except Exception:
+        return ""
+
+
 def workday(company: str, tenant: str, wd: str, site: str) -> List[Job]:
+    from .filters import is_engineering, is_internship  # local import avoids a cycle
+
     base = f"https://{tenant}.{wd}.myworkdayjobs.com"
     api = f"{base}/wday/cxs/{tenant}/{site}/jobs"
     jobs: List[Job] = []
@@ -165,6 +178,13 @@ def workday(company: str, tenant: str, wd: str, site: str) -> List[Job]:
             offset += 20
             if len(postings) < 20 or offset >= (data.get("total") or 0):
                 break
+    # Add the country to postings that could be wanted, so non-US ones can be dropped
+    for j in jobs:
+        if is_internship(j.title) and is_engineering(j.title):
+            path = j.url.split(f"/{site}", 1)[-1]
+            country = _workday_country(base, tenant, site, path)
+            if country:
+                j.location = f"{j.location} [country: {country}]".strip()
     return jobs
 
 

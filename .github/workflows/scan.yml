@@ -10,6 +10,10 @@ on:
         description: "Dry run: only list what was found (no sheet changes, no email)"
         type: boolean
         default: false
+      show:
+        description: "Dry run only: also list every raw posting for companies whose name contains this text"
+        type: string
+        default: ""
 
 concurrency:
   group: internship-scan
@@ -29,7 +33,7 @@ jobs:
 
       - name: Dry run
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
-        run: python -m bot.main --dry-run
+        run: python -m bot.main --dry-run --show "${{ inputs.show }}"
 
       - name: Scan, update sheet, email
         if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}

@@ -7,6 +7,7 @@ from typing import Dict, List, Set
 import gspread
 from google.oauth2.service_account import Credentials
 
+from .filters import clean_location
 from .models import Job, job_key
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
@@ -93,7 +94,7 @@ class Tracker:
             row = [""] * width
             row[self.col["Company"]] = job.company
             row[self.col["Title"]] = job.title
-            row[self.col["Location"]] = job.location
+            row[self.col["Location"]] = clean_location(job.location)
             row[self.col["Application Status"]] = status
             row[self.col["Link"]] = job.url
             row[self.col["Date Posted"]] = job.posted or ""

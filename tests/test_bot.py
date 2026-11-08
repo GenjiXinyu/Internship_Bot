@@ -237,3 +237,18 @@ def test_email_format():
     body = msg.get_body(preferencelist=("plain",)).get_content()
     assert body.startswith("Apex: Propulsion Internship\nApply: https://jobs.ashbyhq.com/")
     assert "Vast: Mechanical/Aerospace Engineering Intern\nApply: https://job-boards.greenhouse.io/vast/jobs/1234567" in body
+
+
+def test_workday_country_tag():
+    from bot.filters import clean_location
+    assert not is_us("Gorgonzola [country: Italy]")
+    assert not is_us("Noida Berger Tower [country: India]")
+    assert is_us("Plantation [country: United States of America]")
+    assert is_us("Los Angeles (HQ)")
+    assert clean_location("Plantation [country: United States of America]") == "Plantation"
+    assert clean_location("[country: United States of America]") == "United States of America"
+
+
+def test_security_analyst_dropped():
+    assert not is_engineering("Security Analyst Intern Summer 2027")
+    assert is_engineering("Cybersecurity Engineer Intern")

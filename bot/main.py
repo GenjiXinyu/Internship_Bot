@@ -108,6 +108,8 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true",
                     help="Fetch and print what would be added; don't touch the sheet or send email")
+    ap.add_argument("--show", default="",
+                    help="With --dry-run: also print every raw posting for companies whose name contains this text")
     args = ap.parse_args(argv)
 
     cfg = load_yaml("config.yaml")
@@ -120,6 +122,15 @@ def main(argv=None) -> int:
     print("Sources:")
     print("\n".join(report))
     print(f"\n{len(jobs)} US engineering internships open across {len(companies)} companies.")
+
+    if args.dry_run and args.show:
+        needle = args.show.lower()
+        print(f"\nEvery posting fetched for companies matching '{args.show}':")
+        for j in sorted(all_jobs, key=lambda j: (j.company, j.source, j.title)):
+            if needle in j.company.lower():
+                print(f"  [{'keep' if wanted(j.title, j.location) else 'drop'}] {j.company} | {j.source} | "
+                      f"{j.title} | {j.location} | {j.url}")
+        print()
 
     if args.dry_run:
         for j in sorted(jobs, key=lambda j: (j.company, j.title)):
