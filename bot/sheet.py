@@ -102,6 +102,10 @@ class Tracker:
             out.append(row)
         # Write right below the last row that has any data in the Company..Link columns
         start = len(self.rows) + 2
+        last = start + len(out) - 1
+        capacity = getattr(self.ws, "row_count", last)
+        if last > capacity:  # the tab has a fixed number of rows; grow it before writing past the end
+            self.ws.add_rows(last - capacity + 200)
         self.ws.update(range_name=f"A{start}", values=out, value_input_option="USER_ENTERED")
         self.rows.extend(out)
 

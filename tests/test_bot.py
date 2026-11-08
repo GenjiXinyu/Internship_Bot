@@ -186,6 +186,9 @@ class FakeWS:
     def append_rows(self, rows, value_input_option=None):
         self.updates.append(("append", rows))
 
+    def add_rows(self, n):
+        self.updates.append(("add_rows", n))
+
 
 def make_tracker(main_rows, seen_rows):
     from bot.sheet import Tracker
@@ -254,3 +257,10 @@ def test_workday_country_tag():
 def test_security_analyst_dropped():
     assert not is_engineering("Security Analyst Intern Summer 2027")
     assert is_engineering("Cybersecurity Engineer Intern")
+
+
+def test_tracker_grows_tab_when_full():
+    t = make_tracker([HEADER, ["A", "B", "C", "D", "https://boards.greenhouse.io/x/jobs/1111111"]], [])
+    t.ws.row_count = 2
+    t.add_jobs([Job("Vast", "Intern", "https://job-boards.greenhouse.io/vast/jobs/2222222")], "2026-11-08", "Not yet Applied")
+    assert t.ws.updates[0] == ("add_rows", 201)
