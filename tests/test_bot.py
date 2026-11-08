@@ -370,3 +370,8 @@ def test_workday_detail_path_when_host_matches_site(monkeypatch):
     jobs = sources.workday("AeroVironment", "avav", "wd1", "avav")
     assert seen_paths == ["https://avav.wd1.myworkdayjobs.com/wday/cxs/avav/avav/job/Simi-Valley-CA/Summer-2027-GNC-Intern_8610"]
     assert pick_location(jobs[0].location) == "Simi Valley, CA"
+
+
+def test_country_in_title_dropped():
+    assert not wanted("Engineering and Technology Summer Internship - UK", "Rotherham")
+    assert wanted("Propulsion Engineering Intern (Summer 2027)", "Long Beach, CA")

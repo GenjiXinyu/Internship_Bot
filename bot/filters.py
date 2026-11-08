@@ -85,7 +85,15 @@ def clean_location(location: str) -> str:
     return loc or (m.group(1) if m else "")
 
 
+TITLE_COUNTRY_RE = re.compile(
+    r"[-–(,]\s*(uk|united kingdom|canada|germany|france|india|australia|japan|singapore|netherlands|belgium|italy|spain)\b",
+    re.I,
+)
+
+
 def wanted(title: str, location: str, terms=()) -> bool:
+    if TITLE_COUNTRY_RE.search(title or ""):  # "... Summer Internship - UK"
+        return False
     return is_internship(title) and is_engineering(title) and is_us(location) and is_summer(title, terms)
 
 
