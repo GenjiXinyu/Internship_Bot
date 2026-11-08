@@ -339,3 +339,34 @@ def test_workday_city_from_link():
     from bot.sources import _workday_city_from_path
     assert _workday_city_from_path("/job/Minneapolis-MN/Summer-2027-Machine-Learning-Intern_8389") == "Minneapolis, MN"
     assert _workday_city_from_path("/job/Greater-Seattle-Area/X_R1") == "Greater Seattle Area"
+
+
+@pytest.mark.parametrize("loc,expected", [
+    ("Derby; Indianapolis, IN", "Indianapolis, IN"),
+    ("Düsseldorf; Houston, TX", "Houston, TX"),
+    ("Franklin, LA; Austin, TX", "Franklin, LA"),      # Louisiana is not Los Angeles: no CA, first US one
+    ("LA; Austin, TX", "LA"),                           # bare "LA" is Los Angeles
+])
+def test_pick_location_prefers_us_and_reads_LA_right(loc, expected):
+    assert pick_location(loc) == expected
+
+
+def test_workday_detail_path_when_host_matches_site(monkeypatch):
+    seen_paths = []
+
+    def fake_post(url, json=None, **kw):
+        if json["searchText"] != "intern":
+            return FakeResp({"total": 0, "jobPostings": []})
+        return FakeResp({"total": 1, "jobPostings": [{"title": "Summer 2027 GNC Intern",
+                         "externalPath": "/job/Simi-Valley-CA/Summer-2027-GNC-Intern_8610", "locationsText": "14 Locations"}]})
+
+    def fake_get(url, **kw):
+        seen_paths.append(url)
+        return FakeResp({"jobPostingInfo": {"location": "Simi Valley, CA", "additionalLocations": ["Huntsville, AL"],
+                                            "country": {"descriptor": "United States of America"}}})
+
+    monkeypatch.setattr(sources.session, "post", fake_post)
+    monkeypatch.setattr(sources.session, "get", fake_get)
+    jobs = sources.workday("AeroVironment", "avav", "wd1", "avav")
+    assert seen_paths == ["https://avav.wd1.myworkdayjobs.com/wday/cxs/avav/avav/job/Simi-Valley-CA/Summer-2027-GNC-Intern_8610"]
+    assert pick_location(jobs[0].location) == "Simi Valley, CA"

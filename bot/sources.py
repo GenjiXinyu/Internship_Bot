@@ -192,10 +192,10 @@ def workday(company: str, tenant: str, wd: str, site: str) -> List[Job]:
             offset += 20
             if len(postings) < 20 or offset >= (data.get("total") or 0):
                 break
-    # Add the country to postings that could be wanted, so non-US ones can be dropped
+    # Add every location and the country to postings that could be wanted
     for j in jobs:
         if is_internship(j.title) and is_engineering(j.title):
-            path = j.url.split(f"/{site}", 1)[-1]
+            path = j.url[len(f"{base}/en-US/{site}"):]
             locs, country = _workday_details(base, tenant, site, path)
             if locs:
                 j.location = "; ".join(locs)

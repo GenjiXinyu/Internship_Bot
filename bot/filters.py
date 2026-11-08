@@ -33,8 +33,8 @@ NON_US_RE = re.compile(
     r"united kingdom|\buk\b|england|scotland|wales|ireland|bristol|london|filton|derby|"
     r"germany|deutschland|berlin|munich|m[uü]nchen|bremen|hamburg|france|toulouse|paris|marseille|"
     r"spain|madrid|getafe|italy|netherlands|belgium|kruibeke|switzerland|sweden|norway|denmark|"
-    r"finland|poland|czech|romania|portugal|austria|india|bangalore|bengaluru|hyderabad|"
-    r"china|japan|korea|singapore|australia|new zealand|auckland|brazil|mexico|morocco|tunisia|"
+    r"finland|poland|czech|romania|portugal|austria|\bindia\b|bangalore|bengaluru|hyderabad|"
+    r"d[uü]sseldorf|cologne|k[oö]ln|stuttgart|frankfurt|china|japan|korea|singapore|australia|new zealand|auckland|brazil|mexico|morocco|tunisia|"
     r"philippines|israel|united arab emirates|\buae\b|saudi|qatar|turkey|czechia|"
     r"\[country: (?!united states)[^\]]*\]",  # added by the Workday fetcher: "Gorgonzola [country: Italy]"
     re.I,
@@ -114,7 +114,7 @@ def is_summer(title: str, terms=(), today=None) -> bool:
 
 # ---------------------------------------------------------------- location
 CA_RE = re.compile(
-    r"\bCA\b|california|los angeles|\bLA\b|san francisco|\bSF\b|south sf|bay area|long beach|hawthorne|"
+    r"\bCA\b|california|los angeles|(?<!, )\bLA\b|san francisco|\bSF\b|south sf|bay area|long beach|hawthorne|"
     r"el segundo|torrance|irvine|costa mesa|newport beach|huntington beach|santa ana|san diego|carlsbad|"
     r"san jose|mountain view|sunnyvale|palo alto|santa clara|fremont|pasadena|redondo|playa vista|"
     r"culver city|mojave|vandenberg|simi valley|moorpark|petaluma|san luis obispo|marina|santa cruz|"
@@ -136,6 +136,9 @@ def pick_location(location: str) -> str:
         return ""
     for p in parts:
         if CA_RE.search(p):
+            return p
+    for p in parts:  # otherwise the first US location, so a US role never shows "Derby" or "Düsseldorf"
+        if not NON_US_RE.search(p):
             return p
     return parts[0]
 

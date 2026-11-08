@@ -133,6 +133,8 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true",
                     help="Fetch and print what would be added; don't touch the sheet or send email")
+    ap.add_argument("--no-email", action="store_true",
+                    help="Update the sheet but don't send the email (for re-seeding the tracker)")
     ap.add_argument("--show", default="",
                     help="With --dry-run: also print every raw posting for companies whose name contains this text")
     args = ap.parse_args(argv)
@@ -191,7 +193,9 @@ def main(argv=None) -> int:
     tracker.mark_seen_role_keys(roles, found_date)
     print(f"Added {len(new)} new roles to the sheet; filled {filled} Date Posted cells.")
 
-    if new:
+    if new and args.no_email:
+        print("Email skipped (--no-email).")
+    elif new:
         sender = os.environ.get("GMAIL_ADDRESS") or email_to
         msg = build_message(new, sender, email_to, catch_up=catch_up)
         send(msg, sender, os.environ["GMAIL_APP_PASSWORD"])

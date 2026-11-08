@@ -10,6 +10,10 @@ on:
         description: "Dry run: only list what was found (no sheet changes, no email)"
         type: boolean
         default: false
+      no_email:
+        description: "Real run without sending the email (for re-seeding the sheet)"
+        type: boolean
+        default: false
       show:
         description: "Dry run only: also list every raw posting for companies whose name contains this text"
         type: string
@@ -43,4 +47,4 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
-        run: python -m bot.main
+        run: python -m bot.main ${{ inputs.no_email && '--no-email' || '' }}
