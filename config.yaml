@@ -1,0 +1,16 @@
+# General settings. Personal details are NOT stored here, because this repo is
+# public. They are GitHub repository secrets (see README.md):
+#   EMAIL_TO                     where alerts are sent
+#   SHEET_ID                     the tracker's ID (docs.google.com/spreadsheets/d/<ID>/edit)
+#   GMAIL_APP_PASSWORD           lets the bot send email from your Gmail
+#   GOOGLE_SERVICE_ACCOUNT_JSON  lets the bot edit the tracker
+
+sheet:
+  tab: Sheet1
+  seen_tab: Seen Postings
+  new_status: Not yet Applied
+
+timezone: America/Los_Angeles
+
+# Backup source used for every company (see companies.yaml)
+simplify_url: https://raw.githubusercontent.com/SimplifyJobs/Summer2027-Internships/dev/.github/scripts/listings.json

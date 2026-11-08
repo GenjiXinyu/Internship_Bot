@@ -1,0 +1,42 @@
+name: Internship scan
+
+on:
+  schedule:
+    # Every 4 hours (GitHub runs schedules in UTC and may start a few minutes late)
+    - cron: "0 */4 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run: only list what was found (no sheet changes, no email)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: internship-scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+
+      - name: Dry run
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: python -m bot.main --dry-run
+
+      - name: Scan, update sheet, email
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.dry_run) }}
+        env:
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+        run: python -m bot.main

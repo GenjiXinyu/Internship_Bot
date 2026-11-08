@@ -1,0 +1,256 @@
+# Companies the bot watches.
+#
+# Each company has one or more sources. Supported source types:
+#   greenhouse: board token        (boards-api.greenhouse.io)
+#   lever:      site name          (api.lever.co)
+#   ashby:      job board name     (api.ashbyhq.com)
+#   workday:    {tenant, wd, site} (e.g. blueorigin.wd5.myworkdayjobs.com/BlueOrigin)
+#   pinpoint:   subdomain          (xyz.pinpointhq.com)
+#   rippling:   board slug         (ats.rippling.com/<slug>)
+#   amazon:     search query       (amazon.jobs)
+#   page:       careers page URL   (looks for links whose text mentions "intern")
+#
+# Put "optional: true" on a source when you are not sure it exists. A failing
+# optional source is only logged, not reported as broken.
+#
+# "simplify" lists the company name(s) as they appear in the community-maintained
+# SimplifyJobs internship list. That list is used as a backup source for every
+# company, and as the main source for companies whose career site cannot be read
+# directly (Oracle, iCIMS, SuccessFactors, etc.). Names must match exactly.
+
+companies:
+  # ---------- Launch and space ----------
+  - name: SpaceX
+    sources: [{greenhouse: spacex}]
+    simplify: [SpaceX]
+  - name: Blue Origin
+    sources: [{workday: {tenant: blueorigin, wd: wd5, site: BlueOrigin}}]
+    simplify: [Blue Origin]
+  - name: Rocket Lab
+    sources: [{greenhouse: rocketlab}]
+    simplify: [Rocket Lab USA, Rocket Lab]
+  - name: Firefly Aerospace
+    sources:
+      - {greenhouse: fireflyaerospace, optional: true}
+      - {lever: fireflyspace, optional: true}
+      - {page: "https://fireflyspace.com/careers/", optional: true}
+    simplify: [Firefly Aerospace]
+  - name: Relativity Space
+    sources: [{greenhouse: relativity}, {greenhouse: rsinternboard}]
+    simplify: [Relativity Space]
+  - name: Stoke Space
+    sources:
+      - {greenhouse: stokespace, optional: true}
+      - {greenhouse: stokespacetechnologies, optional: true}
+    simplify: [Stoke Space]
+  - name: Amazon Leo
+    sources: [{amazon: "kuiper intern"}, {amazon: "amazon leo intern"}]
+  - name: AST SpaceMobile
+    sources:
+      - {greenhouse: astspacemobile, optional: true}
+      - {lever: astspacemobile, optional: true}
+    simplify: [AST SpaceMobile]
+  - name: Planet Labs
+    sources: [{greenhouse: planetlabs}]
+    simplify: [Planet]
+  - name: Iridium
+    sources: []
+    simplify: [Iridium Communications, Iridium]
+  - name: Sierra Space
+    sources: [{workday: {tenant: sierraspace, wd: wd1, site: Sierra_Space_External_Career_Site}}]
+    simplify: [Sierra Space]
+  - name: Axiom Space
+    sources: [{workday: {tenant: axiomspace, wd: wd5, site: External_Career_Site}}]
+    simplify: [Axiom Space]
+  - name: Impulse Space
+    sources: [{pinpoint: impulsespace}]
+    simplify: [Impulse Space]
+  - name: K2 Space
+    sources: [{greenhouse: k2spacecorporation}]
+    simplify: [K2 Space]
+  - name: Anduril
+    sources: [{greenhouse: andurilindustries}]
+    simplify: [Anduril]
+  - name: Redwire
+    sources: [{page: "https://careers.rdw.com/jobs/search?query=intern", optional: true}]
+    simplify: [Redwire, Redwire Space]
+  - name: Vast
+    sources: [{greenhouse: vast}]
+    simplify: [Vast]
+  - name: Varda Space
+    sources: [{greenhouse: vardaspace}]
+    simplify: [Varda Space]
+  - name: Apex
+    sources: [{ashby: apex-technology-inc}]
+    simplify: [Apex]
+  - name: Inversion Space
+    sources: [{greenhouse: inversionspace}]
+    simplify: [Inversion Space]
+  - name: Northwood Space
+    sources: [{ashby: NorthwoodSpace}]
+    simplify: [Northwood Space]
+  - name: AstroForge
+    sources:
+      - {ashby: astroforge, optional: true}
+      - {greenhouse: astroforge, optional: true}
+    simplify: [AstroForge]
+  - name: Astranis
+    sources: [{greenhouse: astranis}]
+    simplify: [Astranis]
+  - name: Muon Space
+    sources: [{greenhouse: muonspace}]
+    simplify: [Muon Space]
+  - name: CesiumAstro
+    sources: [{lever: CesiumAstro}]
+    simplify: [CesiumAstro]
+  - name: Intuitive Machines
+    sources: [{greenhouse: intuitivemachines, optional: true}]
+    simplify: [Intuitive Machines]
+  - name: Astrobotic
+    sources:
+      - {greenhouse: astrobotictechnology, optional: true}
+      - {lever: astrobotic, optional: true}
+    simplify: [Astrobotic, Astrobotic Technology]
+  - name: Starfish Space
+    sources:
+      - {ashby: starfishspace, optional: true}
+      - {lever: starfishspace, optional: true}
+    simplify: [Starfish Space]
+  - name: Gravitics
+    sources:
+      - {greenhouse: gravitics, optional: true}
+      - {lever: gravitics, optional: true}
+      - {ashby: gravitics, optional: true}
+    simplify: [Gravitics]
+  - name: Voyager Technologies
+    sources: [{greenhouse: voyagertechnologiesinc}]
+    simplify: [Voyager Technologies]
+  - name: Reflect Orbital
+    sources: [{ashby: reflect-orbital}]
+    simplify: [Reflect Orbital]
+  - name: The Exploration Company
+    sources: [{ashby: the-exploration-company}]
+    simplify: [The Exploration Company]
+  - name: General Galactic
+    sources: [{page: "https://www.gengalactic.com/careers"}]
+    simplify: [General Galactic]
+  - name: Cowboy Space
+    sources: [{ashby: cowboyspace}]
+    simplify: [Cowboy Space]
+  - name: Antares
+    sources: [{ashby: Antares}]
+    simplify: [Antares Nuclear, Antares]
+
+  # ---------- Propulsion and aircraft ----------
+  - name: Hermeus
+    sources: [{lever: hermeus}]
+    simplify: [Hermeus]
+  - name: Venus Aerospace
+    sources: [{lever: venusaero}]
+    simplify: [Venus Aerospace]
+  - name: Ursa Major
+    sources:
+      - {greenhouse: ursamajor, optional: true}
+      - {greenhouse: ursamajortechnologies, optional: true}
+    simplify: [Ursa Major]
+  - name: Astro Mechanica
+    sources: [{ashby: astro-mechanica}]
+    simplify: [Astro Mechanica]
+  - name: Boom Supersonic
+    sources: [{rippling: boom-supersonic, optional: true}]
+    simplify: [Boom Supersonic]
+  - name: JetZero
+    sources: [{greenhouse: jetzero}]
+    simplify: [JetZero]
+  - name: Joby Aviation
+    sources: []
+    simplify: [Joby Aviation]
+  - name: Archer Aviation
+    sources: [{greenhouse: archer56}]
+    simplify: [Archer Aviation, Archer]
+  - name: Wisk
+    sources: [{lever: wisk}]
+    simplify: [Wisk, Wisk Aero]
+  - name: Whisper Aero
+    sources: [{greenhouse: whisperaero}]
+    simplify: [Whisper Aero]
+  - name: Heart Aerospace
+    sources:
+      - {greenhouse: heartaerospace, optional: true}
+      - {lever: heartaerospace, optional: true}
+      - {ashby: heartaerospace, optional: true}
+    simplify: [Heart Aerospace]
+  - name: Zipline
+    sources:
+      - {greenhouse: flyzipline, optional: true}
+      - {greenhouse: zipline, optional: true}
+    simplify: [Zipline]
+  - name: Wing
+    sources: []
+    simplify: [Wing]
+  - name: Divergent
+    sources: [{greenhouse: divergent}]
+    simplify: [Divergent Technologies, Divergent]
+
+  # ---------- Defense tech ----------
+  - name: Mach Industries
+    sources: [{greenhouse: machindustries}, {ashby: mach, optional: true}]
+    simplify: [Mach Industries]
+  - name: Shield AI
+    sources: [{lever: shieldai}, {ashby: f7d8749a-72d6-407c-bf98-292ea630c73a, optional: true}]
+    simplify: [Shield AI]
+  - name: Saronic
+    sources: [{ashby: saronic}, {lever: saronic, optional: true}]
+    simplify: [Saronic]
+  - name: Oceanus
+    sources: [{ashby: oceanus}]
+    simplify: [Oceanus Marine Technologies, Oceanus]
+  - name: AeroVironment
+    sources: [{workday: {tenant: avav, wd: wd1, site: avav}}]
+    simplify: [AeroVironment]
+
+  # ---------- Engines, systems and suppliers ----------
+  - name: GE Aerospace
+    sources: [{workday: {tenant: geaerospace, wd: wd5, site: ge_externalsite}}]
+    simplify: [GE Aerospace]
+  - name: Honeywell Aerospace
+    sources: []
+    simplify: [Honeywell, Honeywell Aerospace]
+  - name: Howmet Aerospace
+    sources: []
+    simplify: [Howmet Aerospace]
+  - name: Parker Aerospace
+    sources: []
+    simplify: [Parker Hannifin, Parker Aerospace, Parker]
+  - name: TransDigm
+    sources: []
+    simplify: [TransDigm, TransDigm Group]
+  - name: Woodward
+    sources: [{workday: {tenant: woodward, wd: wd5, site: woodward}}]
+    simplify: [Woodward, Woodward Governor]
+
+  # ---------- Foreign headquarters (US sites only) ----------
+  - name: Airbus
+    sources: [{workday: {tenant: ag, wd: wd3, site: Airbus}}]
+    simplify: [Airbus]
+  - name: Safran
+    sources: []
+    simplify: [Safran]
+  - name: Rolls-Royce
+    sources: [{workday: {tenant: rollsroyce, wd: wd3, site: Intern_Graduate}}]
+    simplify: [Rolls-Royce]
+  - name: Bombardier
+    sources: []
+    simplify: [Bombardier]
+  - name: Embraer
+    sources: []
+    simplify: [Embraer]
+  - name: MTU Aero Engines
+    sources: []
+    simplify: [MTU Aero Engines]
+  - name: Dassault Falcon Jet
+    sources: []
+    simplify: [Dassault Falcon Jet, Dassault Aviation]
+  - name: Thales
+    sources: [{workday: {tenant: thales, wd: wd3, site: Careers}}]
+    simplify: [Thales]
