@@ -333,3 +333,9 @@ def test_company_title_beats_backup_copy_for_season():
                  location="Littleton, CO", source="greenhouse:rocketlab")
     out = [j for j in dedupe([backup, direct]) if wanted(j.title, j.location, j.terms)]
     assert out == []
+
+
+def test_workday_city_from_link():
+    from bot.sources import _workday_city_from_path
+    assert _workday_city_from_path("/job/Minneapolis-MN/Summer-2027-Machine-Learning-Intern_8389") == "Minneapolis, MN"
+    assert _workday_city_from_path("/job/Greater-Seattle-Area/X_R1") == "Greater Seattle Area"

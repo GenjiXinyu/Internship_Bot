@@ -132,6 +132,16 @@ def _workday_posted(text: str) -> Optional[str]:
     return None
 
 
+def _workday_city_from_path(path: str) -> str:
+    """'/job/Minneapolis-MN/Title_123' -> 'Minneapolis, MN' (the posting's main location)."""
+    m = re.match(r"/job/([^/]+)/", path or "")
+    if not m:
+        return ""
+    city = m.group(1)
+    m2 = re.match(r"(.+)-([A-Z]{2})$", city)
+    return f"{m2.group(1).replace('-', ' ')}, {m2.group(2)}" if m2 else city.replace("-", " ")
+
+
 def _workday_details(base: str, tenant: str, site: str, path: str):
     """Workday's list shows "3 Locations" or just a city ("Gorgonzola").
     The posting itself has every location and the country."""
@@ -168,11 +178,14 @@ def workday(company: str, tenant: str, wd: str, site: str) -> List[Job]:
                 if not path or path in seen:
                     continue
                 seen.add(path)
+                loc = p.get("locationsText", "")
+                if re.fullmatch(r"\d+ Locations?", loc or ""):
+                    loc = _workday_city_from_path(path) or loc
                 jobs.append(Job(
                     company=company,
                     title=p.get("title", ""),
                     url=f"{base}/en-US/{site}{path}",
-                    location=p.get("locationsText", ""),
+                    location=loc,
                     posted=_workday_posted(p.get("postedOn", "")),
                     source=f"workday:{tenant}",
                 ))
