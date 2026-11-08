@@ -375,3 +375,14 @@ def test_workday_detail_path_when_host_matches_site(monkeypatch):
 def test_country_in_title_dropped():
     assert not wanted("Engineering and Technology Summer Internship - UK", "Rotherham")
     assert wanted("Propulsion Engineering Intern (Summer 2027)", "Long Beach, CA")
+
+
+def test_start_month_counts_as_season():
+    import datetime
+    from bot.filters import is_summer
+    today = datetime.date(2026, 11, 8)
+    assert not is_summer("Structures / Mechanical Test Co-op - January 2027 Co-op", today=today)
+    assert not is_summer("Electrical Engineering Co-op - January 2027", today=today)
+    assert is_summer("June 2027 Co-op - Software Engineer Intern", today=today)
+    assert is_summer("Software Intern", today=today)
+    assert is_summer("May the best intern win", today=today)

@@ -99,6 +99,13 @@ def wanted(title: str, location: str, terms=()) -> bool:
 
 # ---------------------------------------------------------------- season
 SEASON_RE = re.compile(r"\b(summer|spring|fall|autumn|winter)\b", re.I)
+# A start month with a year ("January 2027 Co-op") counts as a season too.
+MONTH_SEASON = {
+    "january": "winter", "february": "winter", "march": "spring", "april": "spring",
+    "may": "summer", "june": "summer", "july": "summer", "august": "summer",
+    "september": "fall", "october": "fall", "november": "fall", "december": "winter",
+}
+MONTH_RE = re.compile(r"\b(" + "|".join(MONTH_SEASON) + r")\s+20\d\d\b", re.I)
 
 
 def is_summer(title: str, terms=(), today=None) -> bool:
@@ -111,6 +118,7 @@ def is_summer(title: str, terms=(), today=None) -> bool:
     today = today or _dt.date.today()
     text = " ".join([title or ""] + list(terms or []))
     seasons = {m.lower() for m in SEASON_RE.findall(text)}
+    seasons |= {MONTH_SEASON[m.lower()] for m in MONTH_RE.findall(text)}
     if seasons and "summer" not in seasons:
         return False
     if "summer" in seasons:
