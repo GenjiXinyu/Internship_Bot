@@ -76,6 +76,8 @@ def test_engineering_internships_kept(title):
     "Internal Audit Manager",              # "Internal" is not "intern"
     "Library Science Co-op",
     "Data Analytics Intern",
+    "Military DoD SkillBridge Internship - Test Technician",
+    "Material Planning- Summer Intern",
 ])
 def test_others_dropped(title):
     assert not (is_internship(title) and is_engineering(title)), title
@@ -131,7 +133,7 @@ def test_workday(monkeypatch):
     monkeypatch.setattr(sources.session, "post", fake_post)
     monkeypatch.setattr(sources, "today", lambda: __import__("datetime").date(2026, 11, 8))
     jobs = sources.workday("Blue Origin", "blueorigin", "wd5", "BlueOrigin")
-    assert calls == ["intern", "co-op"]
+    assert calls == ["intern", "internship", "co-op"]
     assert len(jobs) == 2
     assert jobs[0].url.startswith("https://blueorigin.wd5.myworkdayjobs.com/en-US/BlueOrigin/job/")
     assert jobs[0].key == "wd:R71441"

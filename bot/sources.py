@@ -150,7 +150,7 @@ def workday(company: str, tenant: str, wd: str, site: str) -> List[Job]:
     api = f"{base}/wday/cxs/{tenant}/{site}/jobs"
     jobs: List[Job] = []
     seen = set()
-    for search in ("intern", "co-op"):
+    for search in ("intern", "internship", "co-op"):  # Workday matches whole words only
         offset = 0
         while offset < 400:
             r = session.post(

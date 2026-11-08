@@ -24,7 +24,7 @@ EXCLUDE_RE = re.compile(
     r"communications|public relations|business|procurement|purchasing|people|policy|government|"
     r"hospitality|graphic|brand|social media|supply chain|buyer|contracts|administrative|"
     r"office|facilities|ehs|safety specialist|it support|help ?desk|paralegal|tax|audit|"
-    r"economist|economics|strategy|product manag|program manag|project manag|security",
+    r"economist|economics|strategy|product manag|program manag|project manag|security|skillbridge|planning|planner",
     re.I,
 )
 
