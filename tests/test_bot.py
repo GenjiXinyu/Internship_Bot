@@ -323,3 +323,13 @@ def test_role_counts_as_known_if_any_location_was_logged():
             Job("Rocket Lab", "Mfg Intern Summer 2027", "https://job-boards.greenhouse.io/rocketlab/jobs/7984564003", location="Long Beach, CA")]
     r = group_roles(jobs)[0]
     assert t.known_role(r.keys, r.group_key)
+
+
+def test_company_title_beats_backup_copy_for_season():
+    from bot.main import dedupe
+    backup = Job("Rocket Lab", "Flight Software Intern", "https://boards.greenhouse.io/rocketlab/jobs/7989724003",
+                 location="Littleton, CO", source="simplify", terms=["Summer 2027"])
+    direct = Job("Rocket Lab", "Flight Software Intern Spring 2027", "https://job-boards.greenhouse.io/rocketlab/jobs/7989724003",
+                 location="Littleton, CO", source="greenhouse:rocketlab")
+    out = [j for j in dedupe([backup, direct]) if wanted(j.title, j.location, j.terms)]
+    assert out == []

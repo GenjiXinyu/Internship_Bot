@@ -97,7 +97,7 @@ def dedupe(jobs: List[Job]) -> List[Job]:
             best[j.key] = j
             continue
         if cur.source == "simplify" and j.source != "simplify":
-            j.posted = j.posted or cur.posted
+            j.posted = j.posted or cur.posted   # keep the date, but not the backup list's title/terms
             best[j.key] = j
         elif not cur.posted and j.posted:
             cur.posted = j.posted
@@ -143,7 +143,8 @@ def main(argv=None) -> int:
     found_date = sources.today().isoformat()
 
     all_jobs, report, problems = fetch_all(companies, cfg["simplify_url"])
-    jobs = dedupe([j for j in all_jobs if wanted(j.title, j.location, j.terms)])
+    # Merge copies first so the company's own title (e.g. "... Spring 2027") decides, not a backup copy
+    jobs = [j for j in dedupe(all_jobs) if wanted(j.title, j.location, j.terms)]
     roles = group_roles(jobs)
     print("Sources:")
     print("\n".join(report))
