@@ -411,3 +411,15 @@ def test_controls_does_not_rescue_software():
     assert is_mech_aero("Controls Engineer Intern (Summer 2027)")
     assert is_mech_aero("Automation & Controls Engineering Intern (Summer 2027)")
     assert not is_mech_aero("System Test Automation Intern (Summer 2027)")
+
+
+def test_grad_only():
+    from bot.filters import is_grad_only
+    for t in ["Summer 2027 Aerospace Systems Engineering Intern - Graduate",
+              "Summer 2027 Graduate Engineer Internship/Co-op", "PhD Propulsion Intern",
+              "Master's Structures Intern", "Graduate Student Research Assistant Intern"]:
+        assert is_grad_only(t), t
+    for t in ["Summer 2027 Aerospace Systems Engineering Internship -  Undergraduate",
+              "Undergraduate or Graduate Propulsion Intern", "Summer 2027 Engineering Internship/Co-op",
+              "Mechanical Engineering Intern"]:
+        assert not is_grad_only(t), t

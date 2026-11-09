@@ -141,8 +141,23 @@ TITLE_COUNTRY_RE = re.compile(
 )
 
 
+# Postings aimed only at graduate students. A title that also says "undergraduate" is kept.
+GRAD_ONLY_RE = re.compile(
+    r"(?<!under)graduate\b|\bgrad(uate)? student|master'?s\b|\bm\.?s\.? (student|candidate)|"
+    r"\bph\.?\s?d\b|doctoral|\bmba\b",
+    re.I,
+)
+
+
+def is_grad_only(title: str) -> bool:
+    title = title or ""
+    return bool(GRAD_ONLY_RE.search(title)) and not re.search(r"undergrad", title, re.I)
+
+
 def wanted(title: str, location: str, terms=()) -> bool:
     if TITLE_COUNTRY_RE.search(title or ""):  # "... Summer Internship - UK"
+        return False
+    if is_grad_only(title):
         return False
     return (is_internship(title) and is_engineering(title) and is_mech_aero(title)
             and is_us(location) and is_summer(title, terms))
