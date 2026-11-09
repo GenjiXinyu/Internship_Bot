@@ -79,7 +79,7 @@ MECH_AERO_RE = re.compile(
 NOT_MECH_RE = re.compile(
     r"software|firmware|electrical|electronic|\brf\b|fpga|\bdsp\b|embedded|harness|avionics|"
     r"\bit\b|infrastructure|\bdata\b|machine learning|\bai\b|artificial intelligence|computer|"
-    r"silicon|radio|backend|enterprise|automation|optical|nuclear|reactor|civil|product design|"
+    r"silicon|radio|backend|enterprise|test automation|optical|nuclear|reactor|civil|product design|"
     r"sourcing|supplier|business|reliability|quality|forward deployed|inspector|logistics|"
     r"learning architecture|cyber|network|power",
     re.I,
@@ -89,7 +89,7 @@ GENERAL_MECH_RE = re.compile(
     r"manufactur|production engineer|\btest|integration|\bai&t\b|\bi&t\b|systems? engineer|"
     r"mission operations|space operations|flight operations|operations engineer|industrial engineer|"
     r"additive|r&d|hardware|spacecraft|vehicle|design engineer|robotic|physics|tooling|\bgse\b|"
-    r"airworthiness|mission systems|mission integration|mission architecture|autonomy",
+    r"\\bcontrols?\\b|airworthiness|mission systems|mission integration|mission architecture|autonomy",
     re.I,
 )
 _FILLER_RE = re.compile(

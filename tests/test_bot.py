@@ -403,3 +403,11 @@ def test_mech_aero_filter():
               "Firmware Engineer Intern (Summer 2027)", "Summer 2027 Machine Learning Intern",
               "Quality Engineering Intern"]:
         assert not is_mech_aero(t), t
+
+
+def test_controls_does_not_rescue_software():
+    from bot.filters import is_mech_aero
+    assert not is_mech_aero("Software Engineering Intern (Command & Control) - Spring/Summer 2027")
+    assert is_mech_aero("Controls Engineer Intern (Summer 2027)")
+    assert is_mech_aero("Automation & Controls Engineering Intern (Summer 2027)")
+    assert not is_mech_aero("System Test Automation Intern (Summer 2027)")
