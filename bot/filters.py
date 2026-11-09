@@ -71,7 +71,7 @@ def is_engineering(title: str) -> bool:
 MECH_AERO_RE = re.compile(
     r"mechanic|aerospace|\baero|aerothermal|(?<!infra)structur|stress|\bloads?\b|thermal|propulsion|"
     r"turbomachin|turbine|combustion|fluid|feed system|cryogenic|\bgnc\b|guidance|navigation|"
-    r"\bcontrols?\b|flight dynamics|flight sciences|mechanism|material|airframe|\bcfd\b|"
+    r"flight dynamics|flight sciences|mechanism|material|airframe|\bcfd\b|"
     r"\bengines?\b|launch vehicle|vehicle engineer",
     re.I,
 )
@@ -89,7 +89,7 @@ GENERAL_MECH_RE = re.compile(
     r"manufactur|production engineer|\btest|integration|\bai&t\b|\bi&t\b|systems? engineer|"
     r"mission operations|space operations|flight operations|operations engineer|industrial engineer|"
     r"additive|r&d|hardware|spacecraft|vehicle|design engineer|robotic|physics|tooling|\bgse\b|"
-    r"\\bcontrols?\\b|airworthiness|mission systems|mission integration|mission architecture|autonomy",
+    r"\bcontrols?\b|airworthiness|mission systems|mission integration|mission architecture|autonomy",
     re.I,
 )
 _FILLER_RE = re.compile(
