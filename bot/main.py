@@ -137,6 +137,9 @@ def main(argv=None) -> int:
                     help="Update the sheet but don't send the email (for re-seeding the tracker)")
     ap.add_argument("--show", default="",
                     help="With --dry-run: also print every raw posting for companies whose name contains this text")
+    ap.add_argument("--reset", action="store_true",
+                    help="Before scanning, delete the bot's untouched rows and its memory of seen postings, "
+                         "so this run is a fresh first run")
     args = ap.parse_args(argv)
 
     cfg = load_yaml("config.yaml")
@@ -183,6 +186,9 @@ def main(argv=None) -> int:
         os.environ["GOOGLE_SERVICE_ACCOUNT_JSON"],
         os.environ["SHEET_ID"], cfg["sheet"]["tab"], cfg["sheet"]["seen_tab"],
     )
+    if args.reset:
+        removed = tracker.reset(cfg["sheet"].get("new_status", "Not yet Applied"))
+        print(f"Reset: removed {removed} untouched bot rows and cleared the seen list.")
     catch_up = tracker.first_run
     filled = tracker.fill_posted_dates(jobs)
     # A role is new only if none of its postings (any location) has been seen or logged by you

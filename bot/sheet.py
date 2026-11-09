@@ -25,6 +25,17 @@ def col_letter(index: int) -> str:
     return s
 
 
+def untouched_bot_rows(rows: List[List[str]], col: Dict[str, int], status: str) -> List[int]:
+    """Sheet row numbers (header is row 1) of rows the bot added that you haven't touched:
+    Date Found filled in, status still the bot's default, and no Date Applied."""
+    def cell(row, name):
+        i = col[name]
+        return row[i].strip() if len(row) > i else ""
+    return [i for i, row in enumerate(rows, start=2)
+            if cell(row, "Date Found") and cell(row, "Application Status") == status
+            and not cell(row, "Date Applied")]
+
+
 class Tracker:
     def __init__(self, service_account_json: str, sheet_id: str, tab: str, seen_tab: str):
         creds = Credentials.from_service_account_info(json.loads(service_account_json), scopes=SCOPES)
@@ -71,6 +82,22 @@ class Tracker:
         return group_key in self.seen or any(k in self.seen or k in self.row_by_key for k in keys)
 
     # -- writes
+    def reset(self, status: str) -> int:
+        """Start over: delete the bot's untouched rows and forget every posting seen so far.
+        Rows you edited (status changed or Date Applied filled in) and your own rows stay."""
+        nums = untouched_bot_rows(self.rows, self.col, status)
+        if nums:
+            sid = self.ws.id
+            reqs = [{"deleteDimension": {"range": {"sheetId": sid, "dimension": "ROWS",
+                                                   "startIndex": n - 1, "endIndex": n}}}
+                    for n in sorted(nums, reverse=True)]
+            self.book.batch_update({"requests": reqs})
+        self.seen_ws.clear()
+        self.seen_ws.update(range_name="A1", values=[SEEN_HEADER])
+        self._load()
+        return len(nums)
+
+
     def fill_posted_dates(self, jobs: List[Job]) -> int:
         """For rows you already logged, fill in an empty Date Posted."""
         c = self.col["Date Posted"]

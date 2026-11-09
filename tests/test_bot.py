@@ -423,3 +423,17 @@ def test_grad_only():
               "Undergraduate or Graduate Propulsion Intern", "Summer 2027 Engineering Internship/Co-op",
               "Mechanical Engineering Intern"]:
         assert not is_grad_only(t), t
+
+
+def test_untouched_bot_rows():
+    from bot.sheet import untouched_bot_rows, REQUIRED
+    col = {h: i for i, h in enumerate(REQUIRED)}
+    rows = [
+        ["A", "t", "", "Waiting Response", "u1", "", "", ""],               # yours
+        ["B", "t", "", "Not yet Applied", "u2", "2026-10-01", "2026-11-08"],  # bot, untouched
+        ["C", "t", "", "Not yet Applied", "u3", "", ""],                     # yours, no Date Found
+        ["D", "t", "", "Waiting Response", "u4", "", "2026-11-08", ""],      # bot row you applied to
+        ["E", "t", "", "Not yet Applied", "u5", "", "2026-11-08", "2026-11-09"],  # Date Applied filled
+        ["F", "t", "", "Not yet Applied", "u6", "", "2026-11-08", ""],       # bot, untouched
+    ]
+    assert untouched_bot_rows(rows, col, "Not yet Applied") == [3, 7]
