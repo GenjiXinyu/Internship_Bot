@@ -386,3 +386,20 @@ def test_start_month_counts_as_season():
     assert is_summer("June 2027 Co-op - Software Engineer Intern", today=today)
     assert is_summer("Software Intern", today=today)
     assert is_summer("May the best intern win", today=today)
+
+
+def test_mech_aero_filter():
+    from bot.filters import is_mech_aero
+    for t in ["Combustion Devices Intern Summer 2027", "Turbomachinery Intern Summer 2027",
+              "Aerodynamics & Analysis Engineering Internship - Summer 2027", "Thermal Intern (Summer 2027)",
+              "Avionics Mechanical Engineering Intern (Summer 2027)", "GNC Software Engineering Intern (Summer 2027)",
+              "Summer 2027 Engineering Intern", "Manufacturing Engineering Intern", "Integration & Test Intern Summer 2027",
+              "Summer 2027 Fluid Systems & Propulsion Engineering Internship - Graduate",
+              "Airframe/Structures Engineering Intern"]:
+        assert is_mech_aero(t), t
+    for t in ["Software Engineering Intern", "Electrical Engineering Intern", "FPGA Intern (Summer 2027)",
+              "Summer 2027 Electrical Systems Engineering Internship - Graduate", "Harness Design Engineer Intern",
+              "IT Infrastructure Intern (Summer 2027)", "Test Engineering Intern - Avionics Summer 2027",
+              "Firmware Engineer Intern (Summer 2027)", "Summer 2027 Machine Learning Intern",
+              "Quality Engineering Intern"]:
+        assert not is_mech_aero(t), t

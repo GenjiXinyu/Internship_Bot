@@ -65,6 +65,56 @@ def is_engineering(title: str) -> bool:
     return bool(ENG_RE.search(title)) and not EXCLUDE_RE.search(title)
 
 
+# ---------------------------------------------------------------- mech / aero
+# A mechanical or aerospace discipline in the title: always kept, even next to
+# "software" or "electrical" ("Avionics Mechanical Engineering", "GNC Software").
+MECH_AERO_RE = re.compile(
+    r"mechanic|aerospace|\baero|aerothermal|(?<!infra)structur|stress|\bloads?\b|thermal|propulsion|"
+    r"turbomachin|turbine|combustion|fluid|feed system|cryogenic|\bgnc\b|guidance|navigation|"
+    r"\bcontrols?\b|flight dynamics|flight sciences|mechanism|material|airframe|\bcfd\b|"
+    r"\bengines?\b|launch vehicle|vehicle engineer",
+    re.I,
+)
+# Software, electrical and other non-mech/aero work: dropped unless a discipline above is named.
+NOT_MECH_RE = re.compile(
+    r"software|firmware|electrical|electronic|\brf\b|fpga|\bdsp\b|embedded|harness|avionics|"
+    r"\bit\b|infrastructure|\bdata\b|machine learning|\bai\b|artificial intelligence|computer|"
+    r"silicon|radio|backend|enterprise|automation|optical|nuclear|reactor|civil|product design|"
+    r"sourcing|supplier|business|reliability|quality|forward deployed|inspector|logistics|"
+    r"learning architecture|cyber|network|power",
+    re.I,
+)
+# Broad engineering roles a mech/aero student does: kept when nothing above rules them out.
+GENERAL_MECH_RE = re.compile(
+    r"manufactur|production engineer|\btest|integration|\bai&t\b|\bi&t\b|systems? engineer|"
+    r"mission operations|space operations|flight operations|operations engineer|industrial engineer|"
+    r"additive|r&d|hardware|spacecraft|vehicle|design engineer|robotic|physics|tooling|\bgse\b|"
+    r"airworthiness|mission systems|mission integration|mission architecture|autonomy",
+    re.I,
+)
+_FILLER_RE = re.compile(
+    r"\b(summer|spring|fall|20\d\d|intern(ship)?s?|co-?op|graduate|undergraduate|engineer(ing)?|"
+    r"and|technology|emerging|talent|new|grad|student|program|usa|us)\b|[^a-z]+",
+    re.I,
+)
+
+
+def is_mech_aero(title: str) -> bool:
+    """Mechanical / aerospace relevant: propulsion, structures, aero, thermal, GNC, test, manufacturing...
+
+    Purely software or electrical roles are dropped. A title with no discipline at all
+    ("Summer 2027 Engineering Intern") is kept, since it could be any of them.
+    """
+    title = title or ""
+    if MECH_AERO_RE.search(title):
+        return True
+    if NOT_MECH_RE.search(title):
+        return False
+    if GENERAL_MECH_RE.search(title):
+        return True
+    return not _FILLER_RE.sub("", title).strip()
+
+
 def is_us(location: str) -> bool:
     """Keep a posting unless its location is clearly outside the US.
 
@@ -94,7 +144,8 @@ TITLE_COUNTRY_RE = re.compile(
 def wanted(title: str, location: str, terms=()) -> bool:
     if TITLE_COUNTRY_RE.search(title or ""):  # "... Summer Internship - UK"
         return False
-    return is_internship(title) and is_engineering(title) and is_us(location) and is_summer(title, terms)
+    return (is_internship(title) and is_engineering(title) and is_mech_aero(title)
+            and is_us(location) and is_summer(title, terms))
 
 
 # ---------------------------------------------------------------- season
