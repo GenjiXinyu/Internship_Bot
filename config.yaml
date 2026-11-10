@@ -12,5 +12,10 @@ sheet:
 
 timezone: America/Los_Angeles
 
+# A role you've already been sent counts as reposted (and gets a new "(reposted)" row)
+# when it had been gone from the job board for at least this many days and comes back
+# with a new posting ID.
+repost_after_days: 2
+
 # Backup source used for every company (see companies.yaml)
 simplify_url: https://raw.githubusercontent.com/SimplifyJobs/Summer2027-Internships/dev/.github/scripts/listings.json

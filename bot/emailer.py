@@ -16,7 +16,8 @@ def build_message(jobs: List[Job], sender: str, to: str, catch_up: bool = False)
         subject = f"Internship bot is running: {n} open engineering {noun} right now"
         intro = "These are all the engineering internships open right now at the companies you watch."
     else:
-        subject = f"{n} new {noun} found"
+        reposted = sum(1 for j in jobs if j.title.endswith("(reposted)"))
+        subject = f"{n} new {noun} found" + (f" ({reposted} reposted)" if reposted else "")
         intro = ""
 
     jobs = sorted(jobs, key=lambda j: (j.company.lower(), j.title.lower()))

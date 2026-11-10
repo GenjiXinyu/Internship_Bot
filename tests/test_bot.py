@@ -438,3 +438,41 @@ def test_untouched_bot_rows():
         ["F", "t", "", "Not yet Applied", "u6", "", "2026-11-08", ""],       # bot, untouched
     ]
     assert untouched_bot_rows(rows, col, "Not yet Applied") == [3, 7]
+
+
+SEEN_HDR = ["Key", "Company", "Title", "Link", "First Seen", "Last Seen"]
+
+
+def test_repost_detection():
+    import datetime
+    from types import SimpleNamespace
+    g = "grp:hermeus|mechanical engineering intern"
+    seen = [SEEN_HDR,
+            [g, "Hermeus", "Mechanical Engineering Intern", "u", "2026-11-01", "2026-11-05"],
+            ["id:old-posting", "Hermeus", "Mechanical Engineering Intern", "u", "2026-11-01", "2026-11-01"]]
+    t = make_tracker([HEADER], seen)
+    today = datetime.date(2026, 11, 9)
+    # Gone since the 5th and back with a new ID -> reposted
+    assert t.repost_keys(["id:new-posting"], g, today, 2) == ["id:new-posting"]
+    # Same old ID came back (e.g. the board was down for a while) -> not a repost
+    assert t.repost_keys(["id:old-posting"], g, today, 2) == []
+    # Seen open yesterday: a new ID is just another location -> not a repost
+    assert t.repost_keys(["id:new-posting"], g, datetime.date(2026, 11, 6), 2) == []
+    # Role never seen -> handled as a brand-new role, not a repost
+    assert t.repost_keys(["id:x"], "grp:other|role", today, 2) == []
+
+    # Rows written before this feature have no Last Seen -> never a repost
+    t2 = make_tracker([HEADER], [SEEN_HDR[:5], [g, "Hermeus", "t", "u", "2026-11-01"]])
+    assert t2.repost_keys(["id:new-posting"], g, today, 2) == []
+
+    # touch_roles records today's date for roles that are open
+    t.touch_roles([SimpleNamespace(group_key=g)], "2026-11-09")
+    assert t.seen_ws.updates[-1] == ("batch", [{"range": "F2", "values": [["2026-11-09"]]}])
+    assert t.repost_keys(["id:new-posting"], g, today, 2) == []
+
+
+def test_email_subject_counts_reposts():
+    from bot.emailer import build_message
+    jobs = [Job("Vast", "Mechanical Intern", "https://job-boards.greenhouse.io/vast/jobs/1234567"),
+            Job("Hermeus", "Structures Intern (reposted)", "https://jobs.lever.co/hermeus/abc")]
+    assert build_message(jobs, "a@b.c", "d@e.f")["Subject"] == "2 new internships found (1 reposted)"

@@ -13,6 +13,7 @@ import argparse
 import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import replace
 from pathlib import Path
 from typing import Dict, List, Tuple
 
@@ -200,9 +201,25 @@ def main(argv=None) -> int:
     new_roles = [r for r in roles if not tracker.known_role(r.keys, r.group_key)]
     new = [r.job for r in new_roles]
 
+    # A known role counts as reposted when it had disappeared from the board for a while and
+    # now has a posting with a new ID. It gets its own row, marked "(reposted)".
+    after_days = int(cfg.get("repost_after_days", 2))
+    new_ids = {id(r) for r in new_roles}
+    reposted = []
+    for r in roles:
+        if id(r) in new_ids:
+            continue
+        fresh = tracker.repost_keys(r.keys, r.group_key, sources.today(), after_days)
+        if fresh:
+            j = Role([m for m in r.members if m.key in fresh]).job
+            reposted.append(replace(j, title=f"{j.title} (reposted)"))
+    new += reposted
+
     tracker.add_jobs(new, found_date, cfg["sheet"].get("new_status", "Not yet Applied"))
+    tracker.touch_roles(roles, found_date)
     tracker.mark_seen_role_keys(roles, found_date)
-    print(f"Added {len(new)} new roles to the sheet; filled {filled} Date Posted cells.")
+    print(f"Added {len(new) - len(reposted)} new and {len(reposted)} reposted roles to the sheet; "
+          f"filled {filled} Date Posted cells.")
 
     if new and args.no_email:
         print("Email skipped (--no-email).")

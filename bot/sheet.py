@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 import json
-from typing import Dict, List, Set
+from datetime import date
+from typing import Dict, List, Optional, Set
 
 import gspread
 from google.oauth2.service_account import Credentials
@@ -13,7 +14,7 @@ from .models import Job, job_key
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 REQUIRED = ["Company", "Title", "Location", "Application Status", "Link",
             "Date Posted", "Date Found", "Date Applied"]
-SEEN_HEADER = ["Key", "Company", "Title", "Link", "First Seen"]
+SEEN_HEADER = ["Key", "Company", "Title", "Link", "First Seen", "Last Seen"]
 
 
 def col_letter(index: int) -> str:
@@ -42,6 +43,7 @@ class Tracker:
         self.book = gspread.authorize(creds).open_by_key(sheet_id)
         self.ws = self.book.worksheet(tab)
         self.seen_ws = self._seen_tab(seen_tab)
+        self._ensure_seen_header()
         self._load()
 
     # -- setup
@@ -52,6 +54,15 @@ class Tracker:
             ws = self.book.add_worksheet(title=title, rows=2000, cols=len(SEEN_HEADER))
             ws.update(range_name="A1", values=[SEEN_HEADER])
             return ws
+
+    def _ensure_seen_header(self) -> None:
+        """Tabs made before repost detection have no "Last Seen" column; add it."""
+        header = (self.seen_ws.get_all_values() or [[]])[0]
+        if header[:len(SEEN_HEADER)] == SEEN_HEADER:
+            return
+        if getattr(self.seen_ws, "col_count", len(SEEN_HEADER)) < len(SEEN_HEADER):
+            self.seen_ws.add_cols(len(SEEN_HEADER) - self.seen_ws.col_count)
+        self.seen_ws.update(range_name="A1", values=[SEEN_HEADER])
 
     def _load(self) -> None:
         rows = self.ws.get_all_values()
@@ -69,7 +80,16 @@ class Tracker:
             if k:
                 self.row_by_key.setdefault(k, i)
         seen_rows = self.seen_ws.get_all_values()[1:]
-        self.seen: Set[str] = {r[0] for r in seen_rows if r}
+        self.seen: Set[str] = set()
+        self.seen_row: Dict[str, int] = {}      # key -> row number in the seen tab
+        self.last_seen: Dict[str, str] = {}     # key -> last date the role was open
+        for i, r in enumerate(seen_rows, start=2):
+            if not r or not r[0]:
+                continue
+            self.seen.add(r[0])
+            self.seen_row.setdefault(r[0], i)
+            if len(r) > 5 and r[5].strip():
+                self.last_seen[r[0]] = r[5].strip()
 
     @property
     def first_run(self) -> bool:
@@ -81,7 +101,29 @@ class Tracker:
     def known_role(self, keys: List[str], group_key: str) -> bool:
         return group_key in self.seen or any(k in self.seen or k in self.row_by_key for k in keys)
 
+    def repost_keys(self, keys: List[str], group_key: str, today: date, after_days: int) -> List[str]:
+        """Postings that make a known role count as reposted: the role had been gone from
+        the board for at least `after_days`, and now there's a posting with a new ID."""
+        if group_key not in self.seen:
+            return []
+        fresh = [k for k in keys if k not in self.seen and k not in self.row_by_key]
+        last: Optional[str] = self.last_seen.get(group_key)
+        if not fresh or not last:
+            return []
+        return fresh if (today - date.fromisoformat(last)).days >= after_days else []
+
     # -- writes
+    def touch_roles(self, roles, found_date: str) -> None:
+        """Record that these roles are open today (for repost detection)."""
+        updates = []
+        for r in roles:
+            row = self.seen_row.get(r.group_key)
+            if row and self.last_seen.get(r.group_key) != found_date:
+                updates.append({"range": f"F{row}", "values": [[found_date]]})
+                self.last_seen[r.group_key] = found_date
+        if updates:
+            self.seen_ws.batch_update(updates, value_input_option="RAW")
+
     def reset(self, status: str) -> int:
         """Start over: delete the bot's untouched rows and forget every posting seen so far.
         Rows you edited (status changed or Date Applied filled in) and your own rows stay."""
@@ -146,8 +188,9 @@ class Tracker:
         for r in roles:
             for k in [r.group_key] + r.keys:
                 if k and k not in self.seen:
-                    rows.append([k, r.job.company, r.job.title, r.job.url, found_date])
+                    rows.append([k, r.job.company, r.job.title, r.job.url, found_date, found_date])
                     self.seen.add(k)
+                    self.last_seen[k] = found_date
         if rows:
             self.seen_ws.append_rows(rows, value_input_option="RAW")
 
