@@ -186,7 +186,12 @@ def main(argv=None) -> int:
         os.environ["GOOGLE_SERVICE_ACCOUNT_JSON"],
         os.environ["SHEET_ID"], cfg["sheet"]["tab"], cfg["sheet"]["seen_tab"],
     )
-    if args.reset:
+    if args.reset and problems:
+        # A board that failed this run would have its postings forgotten and then come back
+        # as "new" on the next run, so don't start over until every board answers.
+        print("Reset skipped: some job boards failed this run (listed below). Doing a normal run instead; "
+              "try the reset again later.")
+    elif args.reset:
         removed = tracker.reset(cfg["sheet"].get("new_status", "Not yet Applied"))
         print(f"Reset: removed {removed} untouched bot rows and cleared the seen list.")
     catch_up = tracker.first_run

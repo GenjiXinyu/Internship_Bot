@@ -131,6 +131,7 @@ def test_workday(monkeypatch):
         return FakeResp(load("workday.json") if json["searchText"] == "intern" else {"total": 0, "jobPostings": []})
 
     monkeypatch.setattr(sources.session, "post", fake_post)
+    monkeypatch.setattr(sources, "_workday_details", lambda *a, **k: ([], None))  # no network in tests
     monkeypatch.setattr(sources, "today", lambda: __import__("datetime").date(2026, 11, 8))
     jobs = sources.workday("Blue Origin", "blueorigin", "wd5", "BlueOrigin")
     assert calls == ["intern", "internship", "co-op"]
