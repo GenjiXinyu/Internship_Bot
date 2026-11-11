@@ -163,10 +163,10 @@ def main(argv=None) -> int:
           f"{len(roles)} after merging the same role offered in several locations.")
 
     if args.dry_run and args.show:
-        needle = args.show.lower()
+        needles = [n.strip().lower() for n in args.show.split(",") if n.strip()]
         print(f"\nEvery posting fetched for companies matching '{args.show}':")
         for j in sorted(all_jobs, key=lambda j: (j.company, j.source, j.title)):
-            if needle in j.company.lower():
+            if any(n in j.company.lower() for n in needles):
                 print(f"  [{'keep' if wanted(j.title, j.location, j.terms, j.dept) else 'drop'}] {j.company} | {j.source} | "
                       f"{j.title} | {j.location} | {j.url}")
         print()
