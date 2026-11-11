@@ -4,6 +4,11 @@ name: Probe job boards
 # Reads public job boards only; writes nothing.
 on:
   workflow_dispatch:
+    inputs:
+      args:
+        description: "Extra arguments for tools/probe.py"
+        type: string
+        default: ""
 
 jobs:
   probe:
@@ -16,4 +21,4 @@ jobs:
           python-version: "3.12"
           cache: pip
       - run: pip install -r requirements.txt
-      - run: python -m tools.probe
+      - run: python -m tools.probe ${{ inputs.args }}

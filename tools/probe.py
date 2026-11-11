@@ -98,12 +98,13 @@ def spellings(name: str, extra):
 
 
 def try_board(company, kind, slug):
-    fn = {"greenhouse": sources.greenhouse, "lever": sources.lever, "ashby": sources.ashby}[kind]
+    fn = {"greenhouse": sources.greenhouse, "lever": sources.lever, "ashby": sources.ashby,
+          "rippling": sources.rippling, "pinpoint": sources.pinpoint}[kind]
     try:
         jobs = fn(company, slug)
     except Exception:
         return None
-    if kind == "lever" and not jobs:
+    if kind in ("lever", "rippling", "pinpoint") and not jobs:
         return None  # Lever answers [] for names that don't exist
     interns = [j.title for j in jobs if is_internship(j.title)]
     return (f"{kind}:{slug}", len(jobs), interns)
@@ -131,7 +132,44 @@ def try_page(company, url):
     return (f"page:{url}", len(jobs), [j.title for j in jobs])
 
 
+SECOND_PASS = {
+    "Beta Technologies": ["beta-technologies", "betatech", "flybeta", "beta-tech"],
+    "Ampaire": ["ampaire", "ampaire-inc"], "Natilus": ["natilus", "natilus-inc"],
+    "Otto Aerospace": ["otto-aerospace", "ottoaerospace", "otto-aviation"],
+    "ZeroAvia": ["zeroavia", "zero-avia"], "Starcloud": ["starcloud", "starcloud-inc", "starcloudinc"],
+    "Agile Space Industries": ["agile-space-industries", "agilespaceindustries", "agile-space"],
+    "Phase Four": ["phase-four", "phasefour", "phase-four-inc"],
+    "Benchmark Space Systems": ["benchmark-space-systems", "benchmarkspacesystems", "benchmark-space"],
+    "X-Bow Systems": ["x-bow-systems", "xbow-systems", "xbowsystems", "x-bow"],
+    "Firehawk Aerospace": ["firehawk-aerospace", "firehawkaerospace", "firehawk"],
+    "Radian Aerospace": ["radian-aerospace", "radianaerospace", "radian"],
+    "Castelion": ["castelion", "castelion-corp", "castelioncorp"],
+    "Lunar Outpost": ["lunar-outpost", "lunaroutpost", "lunaroutpostinc"],
+    "Interlune": ["interlune", "interlune-inc"], "Hadrian": ["hadrian", "hadrian-automation"],
+    "Umbra": ["umbra", "umbra-lab", "umbralab", "umbra-space"],
+}
+
+
+def second_pass():
+    found = {n: [] for n in SECOND_PASS}
+    with ThreadPoolExecutor(16) as ex:
+        futs = [(n, ex.submit(try_board, n, kind, slug)) for n, slugs in SECOND_PASS.items()
+                for slug in slugs for kind in ("greenhouse", "lever", "ashby", "rippling", "pinpoint")]
+        for n, f in futs:
+            r = f.result()
+            if r:
+                found[n].append(r)
+    for n, hits in found.items():
+        print(f"== {n}")
+        for src, total, interns in hits:
+            print(f"   {src}: {total} jobs, {len(interns)} intern titles {interns[:4]}")
+        if not hits:
+            print("   (no board found)")
+
+
 def main():
+    if "--second" in sys.argv:
+        return second_pass()
     cfg = yaml.safe_load(open("config.yaml"))
     listings = sources.load_simplify(cfg["simplify_url"])
     simplify_names = {}
