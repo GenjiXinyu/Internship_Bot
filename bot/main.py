@@ -61,7 +61,7 @@ def fetch_all(companies: List[dict], simplify_url: str) -> Tuple[List[Job], List
                 problems.append(f"{name} ({label}): {err}")
         else:
             direct_ok[name] = True
-            kept = sum(1 for j in got if wanted(j.title, j.location, j.terms))
+            kept = sum(1 for j in got if wanted(j.title, j.location, j.terms, j.dept))
             report.append(f"  [ok]   {name:24s} {label}: {len(got)} jobs, {kept} engineering internships")
         jobs.extend(got)
 
@@ -75,7 +75,7 @@ def fetch_all(companies: List[dict], simplify_url: str) -> Tuple[List[Job], List
     for c in companies:
         got = sources.simplify_jobs(listings, c["name"], c.get("simplify") or [c["name"]])
         if got:
-            kept = sum(1 for j in got if wanted(j.title, j.location, j.terms))
+            kept = sum(1 for j in got if wanted(j.title, j.location, j.terms, j.dept))
             report.append(f"         {c['name']:24s} simplify: {len(got)} active, {kept} engineering internships")
         jobs.extend(got)
 
@@ -150,7 +150,7 @@ def main(argv=None) -> int:
 
     all_jobs, report, problems = fetch_all(companies, cfg["simplify_url"])
     # Merge copies first so the company's own title (e.g. "... Spring 2027") decides, not a backup copy
-    jobs = [j for j in dedupe(all_jobs) if wanted(j.title, j.location, j.terms)]
+    jobs = [j for j in dedupe(all_jobs) if wanted(j.title, j.location, j.terms, j.dept)]
     roles = group_roles(jobs)
     print("Sources:")
     print("\n".join(report))
@@ -162,7 +162,7 @@ def main(argv=None) -> int:
         print(f"\nEvery posting fetched for companies matching '{args.show}':")
         for j in sorted(all_jobs, key=lambda j: (j.company, j.source, j.title)):
             if needle in j.company.lower():
-                print(f"  [{'keep' if wanted(j.title, j.location, j.terms) else 'drop'}] {j.company} | {j.source} | "
+                print(f"  [{'keep' if wanted(j.title, j.location, j.terms, j.dept) else 'drop'}] {j.company} | {j.source} | "
                       f"{j.title} | {j.location} | {j.url}")
         print()
 

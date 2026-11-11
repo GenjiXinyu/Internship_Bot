@@ -154,13 +154,22 @@ def is_grad_only(title: str) -> bool:
     return bool(GRAD_ONLY_RE.search(title)) and not re.search(r"undergrad", title, re.I)
 
 
-def wanted(title: str, location: str, terms=()) -> bool:
+def is_generic_title(title: str) -> bool:
+    """A title that names no discipline at all, like "Summer 2027 Internship"."""
+    return not _FILLER_RE.sub("", title or "").strip()
+
+
+def wanted(title: str, location: str, terms=(), dept: str = "") -> bool:
     if TITLE_COUNTRY_RE.search(title or ""):  # "... Summer Internship - UK"
         return False
     if is_grad_only(title):
         return False
-    return (is_internship(title) and is_engineering(title) and is_mech_aero(title)
-            and is_us(location) and is_summer(title, terms))
+    if not (is_internship(title) and is_us(location) and is_summer(title, terms)):
+        return False
+    if is_generic_title(title) and dept:
+        # "Summer 2027 Internship" says nothing; the team ("Engineering and Systems") does.
+        return is_engineering(dept) and not NOT_MECH_RE.search(dept)
+    return is_engineering(title) and is_mech_aero(title)
 
 
 # ---------------------------------------------------------------- season

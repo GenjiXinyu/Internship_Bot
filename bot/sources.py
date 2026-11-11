@@ -101,6 +101,7 @@ def lever(company: str, site: str) -> List[Job]:
             location=loc or "",
             posted=_iso_to_date(j.get("createdAt")),
             source=f"lever:{site}",
+            dept=" / ".join(x for x in (cats.get("department"), cats.get("team")) if x),
         ))
     return jobs
 
@@ -123,6 +124,7 @@ def ashby(company: str, board: str) -> List[Job]:
             location=loc,
             posted=_iso_to_date(j.get("publishedAt")),
             source=f"ashby:{board}",
+            dept=" / ".join(x for x in (j.get("department"), j.get("team")) if isinstance(x, str) and x),
         ))
     return jobs
 

@@ -20,6 +20,7 @@ class Job:
     source: str = ""
     key: str = field(default="")
     terms: list = field(default_factory=list)  # e.g. ["Summer 2027"], when the source says
+    dept: str = ""  # team/department, when the source says ("Engineering and Systems")
 
     def __post_init__(self) -> None:
         if not self.key:

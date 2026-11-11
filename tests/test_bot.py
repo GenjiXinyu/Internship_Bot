@@ -476,3 +476,13 @@ def test_email_subject_counts_reposts():
     jobs = [Job("Vast", "Mechanical Intern", "https://job-boards.greenhouse.io/vast/jobs/1234567"),
             Job("Hermeus", "Structures Intern (reposted)", "https://jobs.lever.co/hermeus/abc")]
     assert build_message(jobs, "a@b.c", "d@e.f")["Subject"] == "2 new internships found (1 reposted)"
+
+
+def test_generic_title_uses_department():
+    # Venus Aerospace posts its engineering internship as just "Summer 2027 Internship"
+    assert wanted("Summer 2027 Internship", "Houston, TX", dept="Engineering and Systems")
+    assert not wanted("Summer 2027 Internship", "Houston, TX", dept="Software Engineering")
+    assert not wanted("Summer 2027 Internship", "Houston, TX", dept="Business Operations")
+    assert not wanted("Summer 2027 Internship", "Houston, TX")  # nothing says engineering
+    # A title with a discipline still decides on its own
+    assert not wanted("Software Engineering Intern (Summer 2027)", "Houston, TX", dept="Engineering and Systems")
