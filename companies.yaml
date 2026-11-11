@@ -318,7 +318,7 @@ companies:
     sources: [{greenhouse: trueanomalyinc}]
     simplify: [True Anomaly]
   - name: Outpost Space
-    sources: [{ashby: outpost}]
+    sources: []  # ashby "outpost" is a different company
     simplify: [Outpost Space, Outpost Technologies]
   - name: Katalyst Space
     sources: [{greenhouse: katalyst}]
@@ -327,7 +327,7 @@ companies:
     sources: [{greenhouse: portalspacesystems}]
     simplify: [Portal Space Systems]
   - name: Array Labs
-    sources: [{greenhouse: array}]
+    sources: []  # greenhouse "array" is a different company
     simplify: [Array Labs]
   - name: Hubble Network
     sources: [{greenhouse: hubblenetwork}]

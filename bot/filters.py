@@ -72,7 +72,7 @@ MECH_AERO_RE = re.compile(
     r"mechanic|aerospace|\baero|aerothermal|(?<!infra)structur|stress|\bloads?\b|thermal|propulsion|"
     r"turbomachin|turbine|combustion|fluid|feed system|cryogenic|\bgnc\b|guidance|navigation|"
     r"flight dynamics|flight sciences|mechanism|material|airframe|\bcfd\b|"
-    r"\bengines?\b|launch vehicle|vehicle engineer",
+    r"(?<!physics )(?<!game )\bengines?\b|launch vehicle|vehicle engineer",
     re.I,
 )
 # Software, electrical and other non-mech/aero work: dropped unless a discipline above is named.
@@ -81,7 +81,7 @@ NOT_MECH_RE = re.compile(
     r"\bit\b|infrastructure|\bdata\b|machine learning|\bai\b|artificial intelligence|computer|"
     r"silicon|radio|backend|enterprise|test automation|optical|nuclear|reactor|civil|product design|"
     r"sourcing|supplier|business|reliability|quality|forward deployed|inspector|logistics|"
-    r"learning architecture|cyber|network|power",
+    r"learning architecture|cyber|network|power|physics engine|game engine",
     re.I,
 )
 # Broad engineering roles a mech/aero student does: kept when nothing above rules them out.

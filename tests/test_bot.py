@@ -486,3 +486,9 @@ def test_generic_title_uses_department():
     assert not wanted("Summer 2027 Internship", "Houston, TX")  # nothing says engineering
     # A title with a discipline still decides on its own
     assert not wanted("Software Engineering Intern (Summer 2027)", "Houston, TX", dept="Engineering and Systems")
+
+
+def test_physics_engine_is_not_an_engine():
+    from bot.filters import is_mech_aero
+    assert not is_mech_aero("Physics Engine Development Engineer Intern - Optimus")
+    assert is_mech_aero("Engines Engineering MBSE Intern - Summer 2027")
