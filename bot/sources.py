@@ -298,6 +298,7 @@ def page(company: str, url: str) -> List[Job]:
     jobs, seen = [], set()
     for href, inner in LINK_RE.findall(r.text):
         text = " ".join(html.unescape(TAG_RE.sub(" ", inner)).split())
+        text = re.sub(r"^Title\s+", "", text)  # iCIMS puts a hidden "Title" label in the link
         if not re.search(r"intern|co-?op", text, re.I) or len(text) > 200:
             continue
         full = urljoin(url, href)

@@ -10,6 +10,7 @@ Each run:
 from __future__ import annotations
 
 import argparse
+import re
 import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
@@ -78,6 +79,10 @@ def fetch_all(companies: List[dict], simplify_url: str) -> Tuple[List[Job], List
             kept = sum(1 for j in got if wanted(j.title, j.location, j.terms, j.dept))
             report.append(f"         {c['name']:24s} simplify: {len(got)} active, {kept} engineering internships")
         jobs.extend(got)
+
+    # Some companies are only watched for one part of their business (Tesla: Optimus)
+    only = {c["name"]: re.compile(c["title_only"], re.I) for c in companies if c.get("title_only")}
+    jobs = [j for j in jobs if j.company not in only or only[j.company].search(j.title)]
 
     # Companies with no working direct source rely on the SimplifyJobs list only
     for c in companies:

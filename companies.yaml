@@ -13,6 +13,9 @@
 # Put "optional: true" on a source when you are not sure it exists. A failing
 # optional source is only logged, not reported as broken.
 #
+# "title_only" (optional) keeps only postings whose title matches, for companies
+# watched for one part of their business (Tesla: Optimus/robotics roles).
+#
 # "simplify" lists the company name(s) as they appear in the community-maintained
 # SimplifyJobs internship list. That list is used as a backup source for every
 # company, and as the main source for companies whose career site cannot be read
@@ -258,3 +261,167 @@ companies:
   - name: Thales
     sources: [{workday: {tenant: thales, wd: wd3, site: Careers}}]
     simplify: [Thales]
+
+  # ========== Added Nov 2026 ==========
+  # ---------- eVTOL and advanced aviation ----------
+  - name: Beta Technologies
+    sources: []
+    simplify: [Beta Technologies, BETA Technologies]
+  - name: Electra.aero
+    sources: [{greenhouse: electraaero}]
+    simplify: [Electra.aero, Electra Aero, Electra]
+  - name: Pivotal
+    sources: [{lever: pivotal}]
+    simplify: [Pivotal Aero, Pivotal]
+  - name: Ampaire
+    sources: []
+    simplify: [Ampaire]
+  - name: Reliable Robotics
+    sources: [{ashby: reliable-robotics}]
+    simplify: [Reliable Robotics]
+  - name: Merlin Labs
+    sources: [{lever: merlinlabs}]
+    simplify: [Merlin Labs, Merlin]
+  - name: Elroy Air
+    sources: [{lever: elroyair}]
+    simplify: [Elroy Air]
+  - name: Natilus
+    sources: []
+    simplify: [Natilus]
+  - name: Otto Aerospace
+    sources: []
+    simplify: [Otto Aerospace, Otto Aviation]
+  - name: Regent
+    sources: [{ashby: regent}]
+    simplify: [REGENT, Regent]
+  - name: Skyryse
+    sources: [{greenhouse: skyryse}]
+    simplify: [Skyryse]
+  - name: ZeroAvia
+    sources: []
+    simplify: [ZeroAvia]
+
+  # ---------- Satellites and spacecraft ----------
+  - name: Loft Orbital
+    sources: [{lever: loftorbital}]
+    simplify: [Loft Orbital]
+  - name: Albedo
+    sources: [{greenhouse: albedo}]
+    simplify: [Albedo]
+  - name: Umbra
+    sources: []
+    simplify: [Umbra, Umbra Lab, Umbra Space]
+  - name: Turion Space
+    sources: [{ashby: turion-space}]
+    simplify: [Turion Space]
+  - name: True Anomaly
+    sources: [{greenhouse: trueanomalyinc}]
+    simplify: [True Anomaly]
+  - name: Outpost Space
+    sources: [{ashby: outpost}]
+    simplify: [Outpost Space, Outpost Technologies]
+  - name: Katalyst Space
+    sources: [{greenhouse: katalyst}]
+    simplify: [Katalyst Space, Katalyst Space Technologies]
+  - name: Portal Space Systems
+    sources: [{greenhouse: portalspacesystems}]
+    simplify: [Portal Space Systems]
+  - name: Array Labs
+    sources: [{greenhouse: array}]
+    simplify: [Array Labs]
+  - name: Hubble Network
+    sources: [{greenhouse: hubblenetwork}]
+    simplify: [Hubble Network]
+  - name: Starcloud
+    sources: []
+    simplify: [Starcloud]
+  - name: Momentus
+    sources: [{greenhouse: momentus}]
+    simplify: [Momentus]
+  - name: Astroscale U.S.
+    sources: [{ashby: astroscale-us}]
+    simplify: [Astroscale, Astroscale U.S.]
+
+  # ---------- Propulsion, launch and lunar ----------
+  - name: Agile Space Industries
+    sources: []
+    simplify: [Agile Space Industries]
+  - name: Phase Four
+    sources: []
+    simplify: [Phase Four]
+  - name: Benchmark Space Systems
+    sources: []
+    simplify: [Benchmark Space Systems]
+  - name: X-Bow Systems
+    sources: []
+    simplify: [X-Bow Systems, X-Bow]
+  - name: Firehawk Aerospace
+    sources: []
+    simplify: [Firehawk Aerospace, Firehawk]
+  - name: Radian Aerospace
+    sources: []
+    simplify: [Radian Aerospace]
+  - name: Castelion
+    sources: []
+    simplify: [Castelion]
+  - name: Lunar Outpost
+    sources: []
+    simplify: [Lunar Outpost]
+  - name: Interlune
+    sources: []
+    simplify: [Interlune]
+
+  # ---------- Aircraft makers, suppliers and labs ----------
+  - name: Textron Aviation
+    sources: []
+    simplify: [Textron Aviation, Textron]
+  - name: Cirrus Aircraft
+    sources: [{page: "https://careers-cirrusaircraft.icims.com/jobs/search?ss=1&searchKeyword=intern"}]
+    simplify: [Cirrus Aircraft]
+  - name: Gulfstream
+    sources: []
+    simplify: [Gulfstream, Gulfstream Aerospace]
+  - name: Moog
+    sources: []
+    simplify: [Moog, "Moog "]
+  - name: Garmin
+    sources: []
+    simplify: [Garmin]
+  - name: NASA JPL
+    sources: []
+    simplify: [NASA Jet Propulsion Laboratory, Jet Propulsion Laboratory, NASA JPL]
+
+  # ---------- Advanced manufacturing ----------
+  - name: Hadrian
+    sources: [{ashby: hadrian-automation}]
+    simplify: [Hadrian]
+  - name: Machina Labs
+    sources: [{ashby: machina-labs}]
+    simplify: [Machina Labs]
+  - name: Freeform
+    sources: [{greenhouse: freeformfuturecorp}]
+    simplify: [Freeform]
+
+  # ---------- Robotics and drones ----------
+  - name: Boston Dynamics
+    sources: [{workday: {tenant: bostondynamics, wd: wd1, site: Boston_Dynamics}}]
+    simplify: [Boston Dynamics]
+  - name: Figure AI
+    sources: [{greenhouse: figureai}]
+    simplify: [Figure, Figure AI]
+  - name: Agility Robotics
+    sources: [{greenhouse: agilityrobotics}]
+    simplify: [Agility Robotics]
+  - name: Apptronik
+    sources: [{greenhouse: apptronik}]
+    simplify: [Apptronik]
+  - name: Tesla
+    sources: []
+    simplify: [Tesla]
+    title_only: "optimus|robot|humanoid"
+  - name: Skydio
+    sources: [{ashby: skydio}]
+    simplify: [Skydio]
+  - name: Gecko Robotics
+    sources: [{ashby: gecko-robotics}]
+    simplify: [Gecko Robotics]
